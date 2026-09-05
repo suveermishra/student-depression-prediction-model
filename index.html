@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Mental Health Screening</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+
+<div class="page-bg"></div>
+
+<main>
+  <header>
+    <div class="header-icon">
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+        <circle cx="14" cy="14" r="13" stroke="#2a7a6e" stroke-width="1.5"/>
+        <path d="M8 14c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6" stroke="#2a7a6e" stroke-width="1.5" stroke-linecap="round"/>
+        <circle cx="14" cy="14" r="2" fill="#2a7a6e"/>
+      </svg>
+    </div>
+    <h1>Student Mental Health Screening</h1>
+    <p class="subtitle">Fill in the details below to assess depression risk using our ML model</p>
+  </header>
+
+  <form id="predict-form" novalidate>
+
+    <!-- ── Personal Details ──────────────────────────────── -->
+    <section class="form-section">
+      <h2 class="section-title">Personal Details</h2>
+      <div class="grid-2">
+
+        <div class="field">
+          <label for="student_name">Student Name</label>
+          <input type="text" id="student_name" name="student_name"
+                 placeholder="Enter full name" autocomplete="off"/>
+        </div>
+
+        <div class="field">
+          <label for="gender">Gender</label>
+          <select id="gender" name="gender" required>
+            <option value="">— Select —</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="age">Age</label>
+          <input type="number" id="age" name="age" min="10" max="60"
+                 placeholder="e.g. 21" required/>
+        </div>
+
+        <!-- City with "Other" option -->
+        <div class="field">
+          <label for="city">City</label>
+          <select id="city_select" name="city_select" required>
+            <option value="">— Select city —</option>
+            <option>Ahmedabad</option><option>Bangalore</option>
+            <option>Bhopal</option><option>Chennai</option>
+            <option>Delhi</option><option>Faridabad</option>
+            <option>Ghaziabad</option><option>Hyderabad</option>
+            <option>Indore</option><option>Jaipur</option>
+            <option>Kalyan</option><option>Kolkata</option>
+            <option>Lucknow</option><option>Ludhiana</option>
+            <option>Meerut</option><option>Mumbai</option>
+            <option>Nagpur</option><option>Nashik</option>
+            <option>Patna</option><option>Pune</option>
+            <option>Rajkot</option><option>Srinagar</option>
+            <option>Surat</option><option>Thane</option>
+            <option>Vadodara</option><option>Varanasi</option>
+            <option>Visakhapatnam</option>
+            <option value="__other__">Other — type my city</option>
+          </select>
+          <!-- revealed when "Other" is chosen -->
+          <div id="city_other_wrap" class="other-wrap" hidden>
+            <input type="text" id="city_other" name="city_other"
+                   placeholder="Type your city name…" autocomplete="off"/>
+            <button type="button" class="other-clear" onclick="clearOther('city')">✕</button>
+          </div>
+          <!-- hidden field that always holds the final value sent to Flask -->
+          <input type="hidden" id="city" name="city"/>
+        </div>
+
+        <!-- Degree with "Other" option -->
+        <div class="field">
+          <label for="degree">Degree</label>
+          <select id="degree_select" name="degree_select" required>
+            <option value="">— Select degree —</option>
+            <option>B.Arch</option><option>B.Com</option>
+            <option>B.Ed</option><option>B.Pharm</option>
+            <option>BBA</option><option>BCA</option>
+            <option>BE</option><option>BHM</option>
+            <option>BSc</option><option>BTech</option>
+            <option>Class 12</option><option>LLB</option>
+            <option>MBA</option><option>MCA</option>
+            <option>MD</option><option>MSc</option>
+            <option>MTech</option><option>MPharm</option>
+            <option>PhD</option>
+            <option value="__other__">Other — type my degree</option>
+          </select>
+          <div id="degree_other_wrap" class="other-wrap" hidden>
+            <input type="text" id="degree_other" name="degree_other"
+                   placeholder="Type your degree name…" autocomplete="off"/>
+            <button type="button" class="other-clear" onclick="clearOther('degree')">✕</button>
+          </div>
+          <input type="hidden" id="degree" name="degree"/>
+        </div>
+
+        <div class="field">
+          <label for="cgpa">CGPA <span class="hint">(0 – 10)</span></label>
+          <input type="number" id="cgpa" name="cgpa" min="0" max="10"
+                 step="0.01" placeholder="e.g. 7.5" required/>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── Academic & Lifestyle ──────────────────────────── -->
+    <section class="form-section">
+      <h2 class="section-title">Academic &amp; Lifestyle</h2>
+      <div class="grid-2">
+
+        <div class="field">
+          <label for="academic_pressure">Academic Pressure <span class="hint">(1 = low, 5 = high)</span></label>
+          <select id="academic_pressure" name="academic_pressure" required>
+            <option value="">— Select —</option>
+            <option value="1">1 — Very low</option>
+            <option value="2">2 — Low</option>
+            <option value="3">3 — Moderate</option>
+            <option value="4">4 — High</option>
+            <option value="5">5 — Very high</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="study_satisfaction">Study Satisfaction <span class="hint">(1 = low, 5 = high)</span></label>
+          <select id="study_satisfaction" name="study_satisfaction" required>
+            <option value="">— Select —</option>
+            <option value="1">1 — Very low</option>
+            <option value="2">2 — Low</option>
+            <option value="3">3 — Moderate</option>
+            <option value="4">4 — High</option>
+            <option value="5">5 — Very high</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="work_study_hours">Work / Study Hours per day</label>
+          <input type="number" id="work_study_hours" name="work_study_hours"
+                 min="0" max="24" step="0.5" placeholder="e.g. 6" required/>
+        </div>
+
+        <div class="field">
+          <label for="financial_stress">Financial Stress <span class="hint">(1 = low, 5 = high)</span></label>
+          <select id="financial_stress" name="financial_stress" required>
+            <option value="">— Select —</option>
+            <option value="1">1 — Very low</option>
+            <option value="2">2 — Low</option>
+            <option value="3">3 — Moderate</option>
+            <option value="4">4 — High</option>
+            <option value="5">5 — Very high</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="sleep_duration">Sleep Duration</label>
+          <select id="sleep_duration" name="sleep_duration" required>
+            <option value="">— Select —</option>
+            <option value="Less than 5 hours">Less than 5 hours</option>
+            <option value="5-6 hours">5 – 6 hours</option>
+            <option value="7-8 hours">7 – 8 hours</option>
+            <option value="More than 8 hours">More than 8 hours</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="dietary_habits">Dietary Habits</label>
+          <select id="dietary_habits" name="dietary_habits" required>
+            <option value="">— Select —</option>
+            <option value="Healthy">Healthy</option>
+            <option value="Moderate">Moderate</option>
+            <option value="Unhealthy">Unhealthy</option>
+          </select>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── Mental Health Background ──────────────────────── -->
+    <section class="form-section">
+      <h2 class="section-title">Mental Health Background</h2>
+      <div class="grid-2">
+
+        <div class="field">
+          <label for="suicidal_thoughts">Ever had suicidal thoughts?</label>
+          <select id="suicidal_thoughts" name="suicidal_thoughts" required>
+            <option value="">— Select —</option>
+            <option value="No">No</option>
+            <option value="Yes">Yes</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="family_history">Family history of mental illness?</label>
+          <select id="family_history" name="family_history" required>
+            <option value="">— Select —</option>
+            <option value="No">No</option>
+            <option value="Yes">Yes</option>
+          </select>
+        </div>
+
+      </div>
+    </section>
+
+    <div class="submit-row">
+      <button type="submit" id="submit-btn">
+        <span id="btn-text">Predict</span>
+        <span id="btn-loader" class="loader" hidden></span>
+      </button>
+    </div>
+
+  </form>
+
+  <div id="result-box" hidden>
+    <div id="result-inner">
+      <div id="result-name"></div>
+      <div id="result-prediction"></div>
+      <div id="result-prob-label">Probability of Depression</div>
+      <div id="result-prob-bar-wrap">
+        <div id="result-prob-bar"></div>
+      </div>
+      <div id="result-prob-pct"></div>
+      <p id="result-disclaimer">
+        This is a screening tool only — not a clinical diagnosis.
+        Please consult a mental health professional for proper evaluation.
+      </p>
+    </div>
+  </div>
+
+  <div id="error-box" hidden>
+    <p id="error-msg"></p>
+  </div>
+
+</main>
+
+<script>
+// ── "Other" field toggle logic ──────────────────────────────
+function setupOther(key) {
+  const sel   = document.getElementById(key + '_select');
+  const wrap  = document.getElementById(key + '_other_wrap');
+  const input = document.getElementById(key + '_other');
+  const hidden= document.getElementById(key);
+
+  // Sync hidden field whenever select changes
+  sel.addEventListener('change', () => {
+    if (sel.value === '__other__') {
+      wrap.hidden = false;
+      input.focus();
+      hidden.value = '';         // clear until user types
+      sel.removeAttribute('required');
+      input.setAttribute('required', '');
+    } else {
+      wrap.hidden = true;
+      input.value = '';
+      input.removeAttribute('required');
+      sel.setAttribute('required', '');
+      hidden.value = sel.value;  // propagate selected value
+    }
+  });
+
+  // Sync hidden field as user types the custom value
+  input.addEventListener('input', () => {
+    hidden.value = input.value.trim();
+  });
+}
+
+function clearOther(key) {
+  const sel   = document.getElementById(key + '_select');
+  const wrap  = document.getElementById(key + '_other_wrap');
+  const input = document.getElementById(key + '_other');
+  const hidden= document.getElementById(key);
+
+  sel.value = '';
+  wrap.hidden = true;
+  input.value = '';
+  hidden.value = '';
+  input.removeAttribute('required');
+  sel.setAttribute('required', '');
+  sel.focus();
+}
+
+setupOther('city');
+setupOther('degree');
+
+// ── Form submission ─────────────────────────────────────────
+const form   = document.getElementById('predict-form');
+const btn    = document.getElementById('submit-btn');
+const btnTxt = document.getElementById('btn-text');
+const loader = document.getElementById('btn-loader');
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  // Validate: check all required visible fields
+  let valid = true;
+  form.querySelectorAll('[required]').forEach(el => {
+    el.classList.remove('invalid');
+    // Skip hidden inputs (they're synced via JS)
+    if (el.type === 'hidden') return;
+    // Skip inputs inside hidden wrappers
+    if (el.closest('.other-wrap') && el.closest('.other-wrap').hidden) return;
+    if (!el.value.trim()) { el.classList.add('invalid'); valid = false; }
+  });
+
+  // Also check the hidden city/degree values are filled
+  ['city', 'degree'].forEach(key => {
+    const hidden = document.getElementById(key);
+    const sel    = document.getElementById(key + '_select');
+    const wrap   = document.getElementById(key + '_other_wrap');
+    const inp    = document.getElementById(key + '_other');
+
+    if (!hidden.value.trim()) {
+      if (!wrap.hidden) { inp.classList.add('invalid'); }
+      else              { sel.classList.add('invalid'); }
+      valid = false;
+    }
+  });
+
+  if (!valid) { shake(btn); return; }
+
+  btnTxt.textContent = 'Predicting…';
+  loader.hidden = false;
+  btn.disabled = true;
+  hideResult();
+
+  try {
+    const res  = await fetch('/predict', { method: 'POST', body: new FormData(form) });
+    const data = await res.json();
+    if (data.error) { showError(data.error); return; }
+    showResult(data);
+  } catch (err) {
+    showError('Network error — is the server running?');
+  } finally {
+    btnTxt.textContent = 'Predict';
+    loader.hidden = true;
+    btn.disabled = false;
+  }
+});
+
+function showResult(data) {
+  const box   = document.getElementById('result-box');
+  const inner = document.getElementById('result-inner');
+
+  document.getElementById('result-name').textContent =
+    data.student_name !== 'Anonymous' ? `Results for ${data.student_name}` : 'Result';
+
+  const pred = document.getElementById('result-prediction');
+  pred.textContent = data.prediction;
+  inner.className = data.prediction === 'Depressed' ? 'depressed' : 'healthy';
+
+  document.getElementById('result-prob-pct').textContent = `${data.probability}%`;
+
+  const bar = document.getElementById('result-prob-bar');
+  bar.style.width = '0%';
+  setTimeout(() => { bar.style.width = data.probability + '%'; }, 50);
+
+  box.hidden = false;
+  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function showError(msg) {
+  const box = document.getElementById('error-box');
+  document.getElementById('error-msg').textContent = msg;
+  box.hidden = false;
+  box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function hideResult() {
+  document.getElementById('result-box').hidden = true;
+  document.getElementById('error-box').hidden  = true;
+}
+
+function shake(el) {
+  el.classList.add('shake');
+  el.addEventListener('animationend', () => el.classList.remove('shake'), { once: true });
+}
+</script>
+
+</body>
+</html>
